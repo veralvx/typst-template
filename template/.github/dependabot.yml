@@ -1,0 +1,35 @@
+# GitHub Actions alone: they are pinned to commits, each release in a comment, and Dependabot moves
+# both (docs.github.com, "Dependabot supported ecosystems"). Not moved here, as Dependabot has no
+# ecosystem for them:
+#   - tools.toml's tools, and the package-check image install-tools.sh pulls by its version: with
+#     the flake's nixpkgs (`nix flake update`, then the `pins` check names each to move)
+#   - the dprint plugins in dprint.json: `just dprint-update`
+#   - a `@preview` package the code imports: by hand, its version in the import
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+      time: "07:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    # `ci(deps): ...` -- nothing a user of the package meets, so no changelog entry
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    labels: # each created once (Issues > Labels): one the repository lacks is ignored
+      - "dependencies"
+      - "actions"
+    groups:
+      # minor and patch updates in one pull request (dependabot-automerge.yml merges it once the
+      # checks pass); a major one alone, for review
+      actions-dependencies:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+    cooldown:
+      default-days: 3

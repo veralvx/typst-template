@@ -1,0 +1,118 @@
+# What `just checks` runs but the flake's (nix.yml) and the commits' and dprint's (style-check-*):
+# the tools tools.toml pins, then the format, the shell (shellcheck, shfmt), the tests, the
+# imports' versions, the README's examples, the template as initialized, and the bundle linted as
+# typst/packages lints it; and the README and the template again on the oldest Typst typst.toml
+# declares (`compiler`). The versions are read from those files at run time, so they stay the one
+# place they are named.
+name: Checks
+
+on:
+  push:
+    branches: [main]
+  # every pull request, whatever it touches: a path-filtered workflow never reports, and a
+  # required check that never reports blocks the merge
+  pull_request:
+  workflow_dispatch:
+
+# a pull request's newest run cancels its older ones; any other run, a group of its own: every
+# commit on main checked (in a shared group, a pending run gives way to the newest: the default)
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    name: Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Read tools.toml
+        id: pins
+        # `name = "version"` lines, as step outputs
+        run: sed -n 's/^\([a-z-]*\) = "\([^"]*\)".*/\1=\2/p' tools.toml >> "$GITHUB_OUTPUT"
+
+      - name: Install Typst
+        uses: typst-community/setup-typst@fee4b65b091cc546f02ce3be15fad8760f38a108 # v5.3.0
+        with:
+          typst-version: ${{ steps.pins.outputs.typst }}
+
+      - name: Install tytanic
+        uses: typst-community/setup-tytanic@91194b909ce8657f9010b1052bd098bb43d6dbcb # v1.1.0
+        with:
+          tytanic-version: ${{ steps.pins.outputs.tytanic }}
+
+      - name: Install just, shellcheck and shfmt
+        uses: taiki-e/install-action@1168f6810a3cb30a3514bf5756a3b7f0422c6df8 # v2.87.28
+        with:
+          tool: just@${{ steps.pins.outputs.just }},shellcheck@${{ steps.pins.outputs.shellcheck }},shfmt@${{ steps.pins.outputs.shfmt }}
+
+      - name: Install typstyle and typst-package-check
+        env:
+          TYPSTYLE: ${{ steps.pins.outputs.typstyle }}
+          PACKAGE_CHECK: ${{ steps.pins.outputs['typst-package-check'] }}
+        run: .github/install-tools.sh
+
+      - name: The checks
+        run: just tools-check format-check shell-check test versions-check readme-check template-check package-check
+
+      # what tytanic compared, for a failing visual test: the reference, the output, the difference
+      - name: Keep the tests' output
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: tests
+          path: |
+            tests/**/ref/
+            tests/**/out/
+            tests/**/diff/
+          if-no-files-found: ignore
+          retention-days: 7
+
+      # the directory typst/packages would get, to look at: the thumbnail of a template among it
+      - name: Keep the bundle
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: bundle
+          path: dist/
+          if-no-files-found: error
+          retention-days: 7
+
+  floor:
+    name: The oldest Typst (typst.toml's compiler)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Read tools.toml and typst.toml
+        id: pins
+        run: |
+          sed -n 's/^\([a-z-]*\) = "\([^"]*\)".*/\1=\2/p' tools.toml >> "$GITHUB_OUTPUT"
+          sed -n 's/^compiler = "\([^"]*\)".*/compiler=\1/p' typst.toml >> "$GITHUB_OUTPUT"
+
+      # as typst-<version>, the name `just floor` runs; first, so the pinned Typst's directory,
+      # added to PATH after it, is the one `typst` names
+      - name: Install the oldest Typst
+        uses: typst-community/setup-typst@fee4b65b091cc546f02ce3be15fad8760f38a108 # v5.3.0
+        with:
+          typst-version: ${{ steps.pins.outputs.compiler }}
+          executable-name: typst-${{ steps.pins.outputs.compiler }}
+
+      # `just floor` reads typst.toml with it (`typst eval`) and renders the bundle's thumbnail
+      - name: Install the pinned Typst
+        uses: typst-community/setup-typst@fee4b65b091cc546f02ce3be15fad8760f38a108 # v5.3.0
+        with:
+          typst-version: ${{ steps.pins.outputs.typst }}
+
+      - name: Install just
+        uses: taiki-e/install-action@1168f6810a3cb30a3514bf5756a3b7f0422c6df8 # v2.87.28
+        with:
+          tool: just@${{ steps.pins.outputs.just }}
+
+      - name: The README and the template on the oldest Typst
+        run: just floor
