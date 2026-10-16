@@ -6,7 +6,9 @@ name: Dependabot Auto-Merge
 #      - Require a pull request before merging, with no required approvals
 #        (one would hold every bump for a person)
 #      - Require status checks to pass before merging (select the real CI
-#        jobs: every job the workflows run on a pull request)
+#        jobs: every job the workflows run on every pull request -- not one
+#        whose `pull_request:` has `paths:`, which reports only when those
+#        paths change, so would block every other merge)
 #
 # The `permissions:` below are all this workflow's token needs; the
 # repository's default token permissions can stay read-only, and nothing
@@ -19,8 +21,7 @@ name: Dependabot Auto-Merge
 #
 # Without step 2 this workflow merges dependency bumps that no CI job
 # ever gated. Auto-merge waits for *required* checks, and a repository
-# with no required checks has nothing to wait for. Those workflows run on
-# every pull request (no path filter), so a required check always reports.
+# with no required checks has nothing to wait for.
 
 on:
   pull_request:

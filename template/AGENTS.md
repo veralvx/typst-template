@@ -21,7 +21,9 @@ runs on a submission. Typst has no way to silence one at the site, so fix the ca
 name replaced, a font that exists, a missing language tag on a code block.
 
 Code is formatted by typstyle, the shell scripts by shfmt (`.editorconfig` holds its style) --
-both pinned in `tools.toml` -- and the Nix by nixfmt: `just format`, and `nix fmt` for all three.
+both pinned in `tools.toml` -- the justfile by just, the Markdown and TOML by dprint, and the Nix
+by nixfmt: `just format` runs them all, `nix fmt` all but dprint. A script is named `*.sh`, a git
+hook excepted: `.editorconfig` and `nix fmt` reach no other. The workflows pass actionlint.
 Shell passes ShellCheck, a justfile script recipe included (`just shell-check` reads them out of
 `just --dump`, and refuses one that splices a value into its text: it takes arguments). Names
 users call are kebab-case (`page-margin`, not `pageMargin`), as Typst's own are and package-check
@@ -88,8 +90,8 @@ with `--no-verify`. `git revert` writes `Revert "..."`, which CI refuses: reword
 
 ## 7. Before you claim a change is done
 
-Run `just checks`. It is what CI runs: the pinned tools, the format, the shell, the tests, the
-imports' versions, the README's examples, {% if project_kind == "template" %}the template as initialized, {% endif %}the bundle through typst-package-check, dprint,
+Run `just checks`. It is what CI runs: the pinned tools, the format, the shell, the workflows, the
+tests, the imports' versions, the README's examples, {% if project_kind == "template" %}the template as initialized, {% endif %}the bundle through typst-package-check, dprint,
 the commit messages, and the flake's checks. CI also compiles the README{% if project_kind == "template" %} and the template{% endif %} on the oldest
 Typst `typst.toml` declares (`compiler`): `just floor` runs that, given that Typst. Reporting
 "done" on a change that has not passed them is the one thing that wastes the most time here.

@@ -1,9 +1,9 @@
 # What `just checks` runs but the flake's (nix.yml) and the commits' and dprint's (style-check-*):
-# the tools tools.toml pins, then the format, the shell (shellcheck, shfmt), the tests, the
-# imports' versions, the README's examples, the template as initialized, and the bundle linted as
-# typst/packages lints it; and the README and the template again on the oldest Typst typst.toml
-# declares (`compiler`). The versions are read from those files at run time, so they stay the one
-# place they are named.
+# the tools tools.toml pins, then the format, the shell (shellcheck, shfmt), the workflows
+# (actionlint), the tests, the imports' versions, the README's examples, the template as
+# initialized, and the bundle linted as typst/packages lints it; and the README and the template
+# again on the oldest Typst typst.toml declares (`compiler`). The versions are read from those
+# files at run time, so they stay the one place they are named.
 name: Checks
 
 on:
@@ -51,14 +51,15 @@ jobs:
         with:
           tool: just@${{ steps.pins.outputs.just }},shellcheck@${{ steps.pins.outputs.shellcheck }},shfmt@${{ steps.pins.outputs.shfmt }}
 
-      - name: Install typstyle and typst-package-check
+      - name: Install typstyle, actionlint and typst-package-check
         env:
           TYPSTYLE: ${{ steps.pins.outputs.typstyle }}
+          ACTIONLINT: ${{ steps.pins.outputs.actionlint }}
           PACKAGE_CHECK: ${{ steps.pins.outputs['typst-package-check'] }}
         run: .github/install-tools.sh
 
       - name: The checks
-        run: just tools-check format-check shell-check test versions-check readme-check template-check package-check
+        run: just tools-check format-check shell-check actionlint test versions-check readme-check template-check package-check
 
       # what tytanic compared, for a failing visual test: the reference, the output, the difference
       - name: Keep the tests' output

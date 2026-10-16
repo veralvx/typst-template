@@ -1,7 +1,7 @@
-# The flake's formatter (`nix fmt`: nixfmt, shfmt), then its checks (flake.nix): the format, the
-# shell (`just shell-check` here and in template/: shellcheck and shfmt, the justfiles' script
-# recipes too) and the workflows (actionlint) -- `just nix`, step by step. The checks are the same
-# on every system, so one runner builds them; every system is evaluated.
+# The flake's formatter (`nix fmt`: nixfmt, shfmt, just's own), then its checks (flake.nix): the
+# format, the shell (`just shell-check` here and in template/: shellcheck and shfmt, the justfiles'
+# script recipes too) and the workflows (actionlint) -- `just nix`, step by step. The checks are the
+# same on every system, so one runner builds them; every system is evaluated.
 name: Nix
 
 on:

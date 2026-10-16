@@ -87,7 +87,7 @@ COPIES = (
     ".github/workflows/dependabot-automerge.yml",
 )
 # the justfile recipes both justfiles hold, the same
-COPIED_RECIPES = ("shell-check", "shfmt")
+COPIED_RECIPES = ("shell-check", "shfmt", "shfmt-recipes")
 
 # cargo-generate's built-ins, plus one sample answer per prompt; `CASES` varies the rest.
 BASE_VARS = {
@@ -147,7 +147,7 @@ def recipe(justfile: pathlib.Path, name: str) -> str | None:
     the next line at the margin)."""
     lines = justfile.read_text().splitlines()
     for i, line in enumerate(lines):
-        if re.match(rf"{re.escape(name)}(\s[^:]*)?:", line):
+        if re.match(rf"@?{re.escape(name)}(\s[^:]*)?:(?!=)", line):  # `:=`: an assignment
             start = i
             while start > 0 and lines[start - 1].startswith(("#", "[")):
                 start -= 1
@@ -270,11 +270,15 @@ def main() -> int:  # noqa: C901, PLR0912, PLR0915 - one gate, read top to botto
             fail(f"justfile recipe {name}: missing, here or in template/")
         elif mine != theirs:
             fail(f"justfile recipe {name} differs from template/justfile's")
-    plugins = [
-        json.loads(re.sub(r"(?m)^\s*//.*$", "", (d / "dprint.json").read_text()))["plugins"]
-        for d in (ROOT, TEMPLATE)
-    ]
-    if plugins[0] != plugins[1]:
+    plugins = []
+    for d in (ROOT, TEMPLATE):
+        # JSONC: a whole-line comment dropped; one after a value is left to fail here
+        try:
+            text = re.sub(r"(?m)^\s*//.*$", "", (d / "dprint.json").read_text())
+            plugins.append(json.loads(text)["plugins"])
+        except (json.JSONDecodeError, KeyError) as error:
+            fail(f"{d / 'dprint.json'}: no plugins read ({error!r})")
+    if len(plugins) == 2 and plugins[0] != plugins[1]:
         fail("dprint.json's plugins are not template/dprint.json's")
     print(f"  checked {len(COPIES)} files, {len(COPIED_RECIPES)} recipes, the plugins")
 

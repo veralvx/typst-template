@@ -1,14 +1,15 @@
-# The package's flake: the tools tools.toml pins -- typst, tytanic, typstyle, just, shellcheck and
-# shfmt from nixpkgs, typst-package-check from its own repository, at its tag -- the others
-# `just checks` and `just release` run, and the checks that need no network.
+# The package's flake: the tools tools.toml pins -- typst, tytanic, typstyle, just, shellcheck,
+# shfmt and actionlint from nixpkgs, typst-package-check from its own repository, at its tag --
+# the others `just checks` and `just release` run, and the checks that need no network.
 #
 #   nix develop      the shell: the pinned tools, jq, dprint, cog, git-cliff...
-#   nix fmt          the formatter: nixfmt, shfmt (as .editorconfig says) and typstyle, through
-#                    treefmt; `nix fmt -- --ci` (`just nix`) formats, and fails if that changed a
-#                    file
+#   nix fmt          the formatter: nixfmt, shfmt (as .editorconfig says), typstyle and just's
+#                    own, through treefmt; `nix fmt -- --ci` (`just nix`) formats, and fails if
+#                    that changed a file
 #   nix flake check  the pins, the format (the formatter's verdict), the shell (`just shell-check`:
-#                    shellcheck and shfmt, the justfile's script recipes too), the tests (tytanic)
-#                    and typst-package-check built, offline in the sandbox
+#                    shellcheck and shfmt, the justfile's script recipes too), the workflows
+#                    (actionlint), the tests (tytanic) and typst-package-check built, offline in
+#                    the sandbox
 #
 # The pins hold only for the nixpkgs flake.lock names, which is why it is committed: after
 # `nix flake update`, the `pins` check names each tool that moved, for tools.toml (and, if Typst
@@ -62,11 +63,12 @@
               just
               shellcheck
               shfmt
+              actionlint
               ;
             inherit typst-package-check;
           };
           # `nix fmt`: each tool on its own files -- the shell scripts by extension, the hooks by
-          # their directory, as they have none
+          # their directory, as they have none; the justfile by name, as `just --fmt` takes one
           formatter = pkgs.treefmt.withConfig {
             settings = {
               on-unmatched = "info";
@@ -88,12 +90,22 @@
                   options = [ "--inplace" ];
                   includes = [ "*.typ" ];
                 };
+                just = {
+                  command = "just";
+                  options = [
+                    "--fmt"
+                    "--unstable"
+                    "--justfile"
+                  ];
+                  includes = [ "justfile" ];
+                };
               };
             };
             runtimeInputs = [
               pkgs.nixfmt
               pkgs.shfmt
               pkgs.typstyle
+              pkgs.just
             ];
           };
           stale = lib.filter (name: (pins.${name} or null) != provided.${name}.version) (
@@ -156,6 +168,28 @@
                   touch $out
                 '';
 
+            # actionlint on a copy, in a repository of its own, as `just actionlint` runs it: with
+            # no file named, actionlint finds the workflows, and .github/actionlint.yaml if there is
+            # one, from the repository's root
+            workflows =
+              pkgs.runCommand "workflows"
+                {
+                  nativeBuildInputs = [
+                    pkgs.actionlint
+                    pkgs.shellcheck
+                    pkgs.gitMinimal
+                  ];
+                }
+                ''
+                  cp -r ${./.} "$TMPDIR/package"
+                  chmod -R u+w "$TMPDIR/package"
+                  cd "$TMPDIR/package"
+                  export HOME="$TMPDIR"
+                  git init --quiet
+                  actionlint
+                  touch $out
+                '';
+
             # from a writable copy: tytanic writes each test's output beside it
             tests = pkgs.runCommand "tests" { nativeBuildInputs = [ pkgs.tytanic ]; } ''
               cp -r ${testSource} "$TMPDIR/package"
@@ -176,6 +210,7 @@
               pkgs.just
               pkgs.shellcheck
               pkgs.shfmt
+              pkgs.actionlint
               pkgs.jq
               pkgs.dprint
               pkgs.cocogitto

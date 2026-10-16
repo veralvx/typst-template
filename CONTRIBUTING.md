@@ -22,9 +22,9 @@ nixpkgs a generated project's `flake.lock` pins too) -- or, installed yourself:
 - **[git-cliff](https://git-cliff.org/)**, for maintainers: `just changelog` and `just release`
   write the changelog with it.
 - For `just smoke`, a generated project's own tools, at exactly the versions `template/tools.toml`
-  pins (its `just tools-check` refuses others): Typst, tytanic, typstyle, typst-package-check,
-  just, ShellCheck and shfmt ([template/CONTRIBUTING.md](template/CONTRIBUTING.md) says how to get
-  each).
+  pins (its `just tools-check` refuses others): Typst, tytanic, typstyle, typst-package-check, just,
+  ShellCheck, shfmt and actionlint ([template/CONTRIBUTING.md](template/CONTRIBUTING.md) says how to
+  get each).
 - **[Nix](https://nixos.org)** for the last of `just checks`, the flake's checks (`just nix`):
   without it, `just checks` stops there, every other check passed.
 
@@ -63,9 +63,10 @@ just render-check          # every templated file rendered for every answer comb
 just smoke package         # generated with cargo-generate, then its own checks (and `template`)
 just generate template     # target/template/demo, to look at, committed once
 just shell-check           # shellcheck and shfmt, this repository's (and template-shell-check)
+just format                # every formatter the checks hold the files to, `nix fmt` last
 ```
 
-`just` alone lists every recipe; `nix fmt` formats the Nix and the shell.
+`just` alone lists every recipe; `nix fmt` alone formats the Nix, the shell and the justfiles.
 
 ## Creating a Pull Request
 
@@ -112,11 +113,11 @@ its notes.
 ## Updating the tools
 
 A generated project's tools are pinned in `template/tools.toml`, held to `template/flake.lock`'s
-nixpkgs by its flake's `pins` check ([template/CONTRIBUTING.md](template/CONTRIBUTING.md)).
-After `cd template && nix flake update`, `just flake-sync` copies its lock here -- this flake's
-inputs are the template's -- and render-check refuses the two apart. The smoke test installs the tools a generated
-project's CI installs, read from its `tools.toml`, but cargo-generate and cocogitto
-(`.github/install-release-tools.sh`) and dprint and git-cliff (in the workflow): move those by
-hand. Dependabot moves the actions, this repository's and the template's in one pull request (the
-copies render-check holds equal move together), as `build(deps)`, a changelog entry: they change
-what a project is generated with. And render-check's Python packages.
+nixpkgs by its flake's `pins` check ([template/CONTRIBUTING.md](template/CONTRIBUTING.md)). After
+`cd template && nix flake update`, `just flake-sync` copies its lock here -- this flake's inputs are
+the template's -- and render-check refuses the two apart. The smoke test installs the tools a
+generated project's CI installs, read from its `tools.toml`, but cargo-generate and cocogitto
+(`.github/install-release-tools.sh`) and dprint and git-cliff (in the workflow): move those by hand.
+Dependabot moves the actions, this repository's and the template's in one pull request (the copies
+render-check holds equal move together), as `build(deps)`, a changelog entry: they change what a
+project is generated with. It moves render-check's Python packages too (`tools/requirements.txt`).

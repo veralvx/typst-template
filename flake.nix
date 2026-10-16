@@ -3,8 +3,9 @@
 #
 #   nix develop      the shell: cargo-generate, the generated projects' tools (typst, tytanic,
 #                    typstyle, just...), shellcheck, shfmt, actionlint, Python for render-check
-#   nix fmt          the formatter: nixfmt and shfmt (as .editorconfig says), through treefmt;
-#                    `nix fmt -- --ci` (`just nix`) formats, and fails if that changed a file
+#   nix fmt          the formatter: nixfmt, shfmt (as .editorconfig says) and just's own, through
+#                    treefmt; `nix fmt -- --ci` (`just nix`) formats, and fails if that changed a
+#                    file
 #   nix flake check  the format (the formatter's verdict), the shell (`just shell-check`, here and
 #                    in template/) and the workflows (actionlint), offline in the sandbox
 #
@@ -36,9 +37,15 @@
       perSystem =
         pkgs:
         let
+          justFmt = [
+            "--fmt"
+            "--unstable"
+            "--justfile"
+          ];
           # `nix fmt`: each tool on its own files -- the shell scripts by extension, the hooks (here
-          # and the template's) by their directory, as they have none. The Typst code is the
-          # template's, with Liquid in it: typstyle formats it in a generated project, not here.
+          # and the template's) by their directory, as they have none; each justfile by name, as
+          # `just --fmt` takes one at a time. The Typst code is the template's, with Liquid in it:
+          # typstyle formats it in a generated project, not here.
           formatter = pkgs.treefmt.withConfig {
             settings = {
               on-unmatched = "info";
@@ -56,11 +63,22 @@
                     "template/.githooks/*"
                   ];
                 };
+                just = {
+                  command = "just";
+                  options = justFmt;
+                  includes = [ "justfile" ];
+                };
+                just-template = {
+                  command = "just";
+                  options = justFmt;
+                  includes = [ "template/justfile" ];
+                };
               };
             };
             runtimeInputs = [
               pkgs.nixfmt
               pkgs.shfmt
+              pkgs.just
             ];
           };
           # a check on a writable copy, in a repository of its own: the recipes list git's files.

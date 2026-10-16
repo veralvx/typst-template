@@ -30,20 +30,21 @@ A change to `template/` is judged by what it generates, never by its text alone:
 
 ## 3. Copies stay copies
 
-These files are the template's own, copied here, and render-check holds each byte for byte equal
-to its original under `template/`: `cog.toml`, `cliff.toml`, `.editorconfig`, `flake.lock` (so
-the tools here are those a project pins; `just flake-sync`), `.github/release-notes.sh`, the
+These files are the template's own, copied here, and render-check holds each byte for byte equal to
+its original under `template/`: `cog.toml`, `cliff.toml`, `.editorconfig`, `flake.lock` (so the
+tools here are those a project pins; `just flake-sync`), `.github/release-notes.sh`, the
 `commit-msg` and `pre-push` hooks, the dprint, Conventional Commits and Dependabot auto-merge
-workflows, and the justfiles' `shell-check` and `shfmt` recipes. Change the original, then copy
-it; its wording must hold in both places.
+workflows, and the justfiles' `shell-check`, `shfmt` and `shfmt-recipes` recipes. Change the
+original, then copy it; its wording must hold in both places.
 
 ## 4. Formats
 
 Shell is formatted by shfmt (`.editorconfig` holds its style) and passes ShellCheck -- a justfile
 script recipe included: `just shell-check` reads them out of `just --dump`, and refuses one that
-splices a value into its text (it takes arguments). The Nix is nixfmt's (`nix fmt` formats both);
-the Markdown and TOML, dprint's; the workflows pass actionlint. Actions are pinned to a full
-commit SHA, the version in a comment, as Dependabot keeps them.
+splices a value into its text (it takes arguments). The Nix is nixfmt's, the justfiles just's own
+(`nix fmt` formats the three); the Markdown and TOML, dprint's; `just format` runs them all. The
+workflows pass actionlint. Actions are pinned to a full commit SHA, the version in a comment, as
+Dependabot keeps them.
 
 ## 5. Comments: only what is essential
 

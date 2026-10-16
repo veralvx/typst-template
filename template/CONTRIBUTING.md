@@ -18,6 +18,8 @@ installed yourself:
     `just shell-check` reads the justfile's own recipes through its `--dump`.
   - **[ShellCheck](https://www.shellcheck.net/)** and **[shfmt](https://github.com/mvdan/sh)**,
     the shell's linter and formatter (its style is `.editorconfig`'s).
+  - **[actionlint](https://github.com/rhysd/actionlint)**, the workflows' linter (and, through
+    ShellCheck, their `run:` scripts').
   - **[typst-package-check](https://github.com/typst/package-check)**, the linter typst/packages
     runs on a submission: `cargo install --locked --git https://github.com/typst/package-check
     --tag v<version>` (it needs OpenSSL's headers), or its image, as CI runs it
@@ -41,10 +43,11 @@ git clone https://github.com/<you>/{{project-name}} && cd {{project-name}}
 ```
 
 3. Optionally, `just install-hooks`: `.githooks/` then checks the Typst code's format, the shell,
-   the imports' versions and dprint before each commit, the message as a Conventional Commit, and
-   every pushed commit's message before a push -- what CI would refuse, minutes earlier. They need
-   `just`, `typst`, `jq`, `typstyle`, `shellcheck`, `shfmt`, `dprint` and `cog` on `PATH` (inside
-   `nix develop`, with Nix); `git config --unset core.hooksPath` turns them off.
+   the workflows, the imports' versions and dprint before each commit, the message as a
+   Conventional Commit, and every pushed commit's message before a push -- what CI would refuse,
+   minutes earlier. They need `just`, `typst`, `jq`, `typstyle`, `shellcheck`, `shfmt`,
+   `actionlint`, `dprint` and `cog` on `PATH` (inside `nix develop`, with Nix);
+   `git config --unset core.hooksPath` turns them off.
 
 ## Guidelines
 
@@ -80,7 +83,7 @@ A new test: `tt new <name>` (a visual one), or a directory with a `test.typ` alo
 ```sh
 just checks          # everything CI runs, the flake's checks last
 just test            # the tests alone
-just format          # typstyle, shfmt and dprint, in place (`nix fmt`: the Nix too)
+just format          # typstyle, shfmt, the justfile and dprint in place, then `nix fmt`
 just bundle          # dist/preview/<name>/<version>: what typst/packages would get
 just install         # the bundle as @local/<name>:<version>, to try it in a document{% if project_kind == "template" %}
 just install preview # ... as @preview, for `typst init` of it (shadows the published version){% endif %}
