@@ -1,7 +1,7 @@
 root = true
 
-# shfmt's style (it reads this when given no formatting flag): the shell scripts, and the git
-# hooks, which have no extension
+# shfmt's style (it reads this when given no formatting flag): the shell scripts, 
+# and the git hooks, which have no extension
 [*.sh]
 indent_style = space
 indent_size = 2
