@@ -1,8 +1,8 @@
-# The flake's formatter (`nix fmt`), then its checks (flake.nix): the pins, the format, the shell,
-# the workflows, the tests, typst-package-check built -- on each system the flake declares: x86_64
-# and aarch64 Linux, Apple silicon (macos-latest), so a visual test's reference holds on each. A
-# runner builds its own system's alone, so every system is also evaluated, nothing built, in one
-# job.
+# The flake's formatter (`nix fmt`), then its checks (flake.nix): the pins, the format, the lints,
+# the shell, the workflows, the tests, typst-package-check built -- on each system the flake
+# declares: x86_64 and aarch64 Linux, Apple silicon (macos-latest), so a visual test's reference
+# holds on each. A runner builds its own system's alone, so every system is also evaluated, nothing
+# built, in one job.
 name: Nix
 
 on:

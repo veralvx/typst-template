@@ -16,9 +16,11 @@ which Typst Universe shows. A change to a public name or parameter is a breaking
 ## 2. Warnings are errors
 
 `just checks` and CI fail on any compiler warning -- in the README's examples, in the template as
-initialized -- and on any warning typst-package-check gives the bundle, the linter typst/packages
-runs on a submission. Typst has no way to silence one at the site, so fix the cause: a deprecated
-name replaced, a font that exists, a missing language tag on a code block.
+initialized -- on any warning typst-package-check gives the bundle, the linter typst/packages runs
+on a submission, and on any lint tinymist reports (`just lint`: a set or show rule that takes no
+effect, a value a function's return discards, a font name it does not know). Neither Typst nor
+tinymist can silence one at the site, so fix the cause: a deprecated name replaced, a font that
+exists, a missing language tag on a code block.
 
 Code is formatted by typstyle, the shell scripts by shfmt (`.editorconfig` holds its style) --
 both pinned in `tools.toml` -- the justfile by just, the Markdown and TOML by dprint, and the Nix
@@ -90,8 +92,8 @@ with `--no-verify`. `git revert` writes `Revert "..."`, which CI refuses: reword
 
 ## 7. Before you claim a change is done
 
-Run `just checks`. It is what CI runs: the pinned tools, the format, the shell, the workflows, the
-tests, the imports' versions, the README's examples, {% if project_kind == "template" %}the template as initialized, {% endif %}the bundle through typst-package-check, dprint,
+Run `just checks`. It is what CI runs: the pinned tools, the format, the lints, the shell, the
+workflows, the tests, the imports' versions, the README's examples, {% if project_kind == "template" %}the template as initialized, {% endif %}the bundle through typst-package-check, dprint,
 the commit messages, and the flake's checks. CI also compiles the README{% if project_kind == "template" %} and the template{% endif %} on the oldest
 Typst `typst.toml` declares (`compiler`): `just floor` runs that, given that Typst. Reporting
 "done" on a change that has not passed them is the one thing that wastes the most time here.

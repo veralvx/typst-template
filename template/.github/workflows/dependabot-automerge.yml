@@ -33,9 +33,9 @@ permissions:
 jobs:
   dependabot:
     runs-on: ubuntu-latest
-    # Use user.login (the PR author), not github.actor (whoever caused the
-    # event: a person pushing to Dependabot's branch too), whereas user.login
-    # is always the account that opened the PR.
+    # Use user.login (always the account that opened the PR), not
+    # github.actor (whoever caused the event: a person pushing to
+    # Dependabot's branch too).
     # Ref: https://docs.github.com/en/code-security/dependabot/working-with-dependabot/automating-dependabot-with-github-actions
     # github.actor: https://docs.github.com/en/actions/reference/workflows-and-actions/contexts
     #
@@ -52,8 +52,8 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Enable auto-merge for patch and minor updates
-        # update-type only emits version-update:semver-{patch,minor,major}.
-        # There is NO "security:" prefix; security updates carry the same
+        # update-type only emits version-update:semver-{patch,minor,major}:
+        # there is no "security:" prefix; security updates carry the same
         # semver labels.  To gate on security status, enable alert-lookup
         # (a PAT or an App's token) and check steps.metadata.outputs.alert-state.
         if: >-

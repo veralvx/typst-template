@@ -1,7 +1,7 @@
 # cargo-generate (language-agnostic, Liquid): `cargo generate --git <this repository> template`.
 #
 #   ignore  -> file is not copied into the generated project at all
-#   exclude -> file IS copied, but is never processed by Liquid
+#   exclude -> file is copied, but never processed by Liquid
 
 [template]
 # 0.25 is the version this template is verified with: `ignore` below names paths as the template
@@ -127,7 +127,7 @@ regex = '^\s*(?:components|visualization|model|layout|text|languages|scripting|i
 #
 # NOTE: `ignore` entries are literal paths relative to the template root, NOT globs -- a glob
 # would resolve to a path that does not exist and be skipped silently; `exclude` above *is*
-# glob-based. The removal happens BEFORE expansion, on the template's own file names
+# glob-based. The removal happens before expansion, on the template's own file names
 # (cargo-generate 0.25, `ignore_me::remove_unneeded_files`).
 
 # A package: no template directory, and the report's module and test are the template's.

@@ -1,15 +1,15 @@
-# The package's flake: the tools tools.toml pins -- typst, tytanic, typstyle, just, shellcheck,
-# shfmt and actionlint from nixpkgs, typst-package-check from its own repository, at its tag --
-# the others `just checks` and `just release` run, and the checks that need no network.
+# The package's flake: the tools tools.toml pins -- typst, tytanic, typstyle, tinymist, just,
+# shellcheck, shfmt and actionlint from nixpkgs, typst-package-check from its own repository, at
+# its tag -- the others `just checks` and `just release` run, and the checks that need no network.
 #
 #   nix develop      the shell: the pinned tools, jq, dprint, cog, git-cliff...
 #   nix fmt          the formatter: nixfmt, shfmt (as .editorconfig says), typstyle and just's
 #                    own, through treefmt; `nix fmt -- --ci` (`just nix`) formats, and fails if
 #                    that changed a file
-#   nix flake check  the pins, the format (the formatter's verdict), the shell (`just shell-check`:
-#                    shellcheck and shfmt, the justfile's script recipes too), the workflows
-#                    (actionlint), the tests (tytanic) and typst-package-check built, offline in
-#                    the sandbox
+#   nix flake check  the pins, the format (the formatter's verdict), the lints (`just lint`:
+#                    tinymist), the shell (`just shell-check`: shellcheck and shfmt, the justfile's
+#                    script recipes too), the workflows (actionlint), the tests (tytanic) and
+#                    typst-package-check built, offline in the sandbox
 #
 # The pins hold only for the nixpkgs flake.lock names, which is why it is committed: after
 # `nix flake update`, the `pins` check names each tool that moved, for tools.toml (and, if Typst
@@ -60,6 +60,7 @@
               typst
               tytanic
               typstyle
+              tinymist
               just
               shellcheck
               shfmt
@@ -141,6 +142,28 @@
             # the formatter's verdict on the whole tree: what `nix fmt` would change fails it
             format = formatter.check ./.;
 
+            # `just lint` on a copy: its script recipe's bash named by its path, as below
+            lint =
+              pkgs.runCommand "lint"
+                {
+                  nativeBuildInputs = [
+                    pkgs.just
+                    pkgs.jq
+                    pkgs.typst
+                    pkgs.tinymist
+                  ];
+                }
+                ''
+                  cp -r ${./.} "$TMPDIR/package"
+                  chmod -R u+w "$TMPDIR/package"
+                  cd "$TMPDIR/package"
+                  export HOME="$TMPDIR"
+                  substituteInPlace justfile \
+                    --replace-fail '#!/usr/bin/env bash' '#!${pkgs.bash}/bin/bash'
+                  just lint
+                  touch $out
+                '';
+
             # `just shell-check` on a copy, in a repository of its own: it lists the scripts git
             # does not ignore. The sandbox has no /usr/bin/env, which the script recipes name: their
             # bash is named by its path instead (to `just shell-check`, the same shell either way).
@@ -206,6 +229,7 @@
               pkgs.typst
               pkgs.tytanic
               pkgs.typstyle
+              pkgs.tinymist
               typst-package-check
               pkgs.just
               pkgs.shellcheck

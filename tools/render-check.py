@@ -1,26 +1,21 @@
 #!/usr/bin/env python3
-"""Render the template with Liquid and check the result, without cargo-generate.
+"""Render the template with Liquid and check the result, without cargo-generate: a fast local
+gate for what otherwise surfaces only after generation. For every combination of prompts:
 
-A fast local gate for template authors. It answers the questions that only surface *after*
-generation otherwise:
-
-  * does every templated file still parse (TOML / YAML / JSON / Nix) once the placeholders are
-    substituted, for every combination of prompts?
-  * did any placeholder survive into the output unexpanded, or name an undeclared variable?
-    (cargo-generate renders a file it cannot render as it stands, and an unknown variable as an
-    empty string -- both silently)
-  * did a file that must NOT be templated (a workflow, cliff.toml, the justfile, the Typst code,
-    the flake) hold one of our placeholders -- and is every binary file (the tests' references)
-    excluded, as cargo-generate aborts on one it tries to render?
-  * do the placeholder regexes accept their own defaults, Universe's categories and disciplines,
-    and the pinned Typst as a `compiler` -- and refuse what Universe would?
-  * do `ignore` paths and `.gitattributes`' export-ignore paths exist, and does the latter keep
-    every file the package needs?
-  * do the licence texts agree -- LICENSE's branch with the file each also is?
-  * does each typst.toml describe its kind and licence, and does each case keep exactly the
-    licence files its README and its `license` name?
-  * are this repository's copies of the template's files still the template's (AGENTS.md, Copies
-    stay copies): the files (flake.lock among them), the justfiles' shell recipes?
+  * every templated file parses (TOML, YAML, JSON, Nix) and keeps no placeholder unexpanded;
+  * every variable referenced is declared: cargo-generate renders an undeclared one as an empty
+    string, and a file it cannot render as it stands, both silently;
+  * no file that must not be templated (a workflow, cliff.toml, the justfile, the Typst code, the
+    flake) holds one of our placeholders, and every binary file (the tests' references) is
+    excluded, as cargo-generate aborts on one;
+  * the regexes accept their own defaults, Universe's categories and disciplines and the pinned
+    Typst as a `compiler`, and refuse what Universe would;
+  * the `ignore` and `.gitattributes`' export-ignore paths exist, the package's files kept;
+  * the licence texts agree: LICENSE's branch with the file each also is;
+  * each typst.toml describes its kind and licence, and each case keeps exactly the licence files
+    its README and its `license` name;
+  * this repository's copies of the template's files are still the template's (AGENTS.md, Copies
+    stay copies), flake.lock and the justfiles' shell recipes among them.
 
 An approximation: cargo-generate uses the Rust `liquid` crate, this python-liquid. They agree on
 the subset used here (assign, if/elsif/else, for, split, strip, date), which is why the template

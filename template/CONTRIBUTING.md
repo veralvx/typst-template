@@ -14,6 +14,8 @@ installed yourself:
   - **[tytanic](https://typst-community.github.io/tytanic/)** (`tt`), the test runner: its
     version is tied to one Typst's, whose rendering the tests' references are.
   - **[typstyle](https://github.com/typstyle-rs/typstyle)**, the formatter.
+  - **[tinymist](https://github.com/Myriad-Dreamin/tinymist)**, the linter (`tinymist lint`; also
+    Typst's language server, for an editor).
   - **[just](https://github.com/casey/just)**, the command runner the automation is written in:
     `just shell-check` reads the justfile's own recipes through its `--dump`.
   - **[ShellCheck](https://www.shellcheck.net/)** and **[shfmt](https://github.com/mvdan/sh)**,
@@ -83,6 +85,7 @@ A new test: `tt new <name>` (a visual one), or a directory with a `test.typ` alo
 ```sh
 just checks          # everything CI runs, the flake's checks last
 just test            # the tests alone
+just lint            # tinymist's linter on the package{% if project_kind == "template" %} and its template{% endif %}
 just format          # typstyle, shfmt, the justfile and dprint in place, then `nix fmt`
 just bundle          # dist/preview/<name>/<version>: what typst/packages would get
 just install         # the bundle as @local/<name>:<version>, to try it in a document{% if project_kind == "template" %}

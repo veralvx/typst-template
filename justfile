@@ -59,7 +59,7 @@ smoke kind:
     project="$(just generate "$1")"
     cd "$project"
     just --fmt --check --unstable
-    just tools-check format-check shell-check actionlint test versions-check readme-check \
+    just tools-check format-check lint shell-check actionlint test versions-check readme-check \
         template-check package-check dprint-check cog
 
 # shellcheck and shfmt over every shell script git does not ignore -- shfmt finds them, by extension

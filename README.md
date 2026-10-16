@@ -1,15 +1,16 @@
 # typst-template
 
 A [`cargo-generate`](https://github.com/cargo-generate/cargo-generate) template for a
-[Typst](https://typst.app) package -- a library, or a template package `typst init` starts
-projects from -- that starts with the whole toolchain wired up and with
+[Typst](https://typst.app) package -- a library, or a template package `typst init` starts projects
+from -- that starts with the whole toolchain wired up and with
 [Typst Universe](https://typst.app/universe)'s rules already kept: tests by
 [tytanic](https://typst-community.github.io/tytanic/) (visual references, assertions, the template
-as initialized), formatting by typstyle, the bundle linted by the same `typst-package-check`
-typst/packages runs on a submission, every warning an error, the README's examples compiled, the
-oldest Typst declared tested in CI, Conventional Commits, changelogs by git-cliff, a release recipe
-that shows every step, a publish workflow that prepares the Universe submission, a Nix flake whose
-tools are the pinned ones, and a `justfile` that runs locally what CI runs remotely.
+as initialized), formatting by typstyle, linting by tinymist, the bundle linted by the same
+`typst-package-check` typst/packages runs on a submission, every warning an error, the README's
+examples compiled, the oldest Typst declared tested in CI, Conventional Commits, changelogs by
+git-cliff, a release recipe that shows every step, a publish workflow that prepares the Universe
+submission, a Nix flake whose tools are the pinned ones, and a `justfile` that runs locally what CI
+runs remotely.
 
 It is the counterpart of the [rust-template](https://github.com/veralvx/rust-template) and the
 [python-template](https://github.com/veralvx/python-template). See [Attribution](#attribution).
@@ -111,8 +112,8 @@ src/lib.typ           the entrypoint: the public API, imported from the modules 
 src/greet.typ         the starter code (a template package's: src/report.typ, template/main.typ)
 tests/                tytanic's: a visual test (its reference in ref/), an assertion test
 README.md             the package's page on Universe: its examples compile, against the bundle
-tools.toml            the pinned typst, tytanic, typstyle, typst-package-check, just, shellcheck,
-                      shfmt and actionlint
+tools.toml            the pinned typst, tytanic, typstyle, tinymist, typst-package-check, just,
+                      shellcheck, shfmt and actionlint
 justfile              `just checks` = what CI runs; `just format`, `just bundle`, `just release`...
 .gitattributes        what typst/packages does not get (export-ignore): the bundle is git archive
 .editorconfig         shfmt's style, for the shell scripts and the git hooks
@@ -132,14 +133,15 @@ LICENSE (+ LICENSE-MIT, LICENSE-APACHE, LICENSE-MIT-0 by the choice and the kind
 ### The checks
 
 `just checks` runs, in order: the tools on `PATH` against `tools.toml`; typstyle over every `.typ`
-file; shellcheck and shfmt over the shell scripts, the git hooks and the justfile's script recipes
-(read out of `just --dump`); actionlint over the workflows; the tests; every
-`@preview/<name>:<version>` import against `typst.toml`'s version; each `typ` block of the README
-compiled alone, importing the bundle; a template package's template, as `typst init` makes it from
-the bundle, compiled; typst-package-check on the bundle; dprint; `cog check`; and last the flake:
-`nix fmt -- --ci` (nixfmt, shfmt, typstyle and just's own, through treefmt; it formats, and fails if
-that changed a file) and its checks. A compiler warning fails each compile, and a package-check
-warning fails too -- a warning on Universe is a review comment.
+file; tinymist's linter over the package from its entrypoint and a template package's template;
+shellcheck and shfmt over the shell scripts, the git hooks and the justfile's script recipes (read
+out of `just --dump`); actionlint over the workflows; the tests; every `@preview/<name>:<version>`
+import against `typst.toml`'s version; each `typ` block of the README compiled alone, importing the
+bundle; a template package's template, as `typst init` makes it from the bundle, compiled;
+typst-package-check on the bundle; dprint; `cog check`; and last the flake: `nix fmt -- --ci`
+(nixfmt, shfmt, typstyle and just's own, through treefmt; it formats, and fails if that changed a
+file) and its checks. A compiler warning fails each compile, and a lint or a package-check warning
+fails too -- a warning on Universe is a review comment.
 
 The bundle (`just bundle`, `dist/preview/<name>/<version>`) is `git archive` of the repository, less
 what `.gitattributes` marks `export-ignore` -- the tooling, the tests, the contributors' documents
@@ -156,13 +158,15 @@ page), and at most 3 MiB.
 ### The pinned tools
 
 tytanic's references are its Typst's rendering, typstyle's and shfmt's format are their own,
-package-check's lints are typst/packages' at its version, shellcheck's and actionlint's their
-versions', and `just shell-check` reads just's own `--dump`: their verdicts depend on their
-versions, so `tools.toml` pins them (typst 0.15.1, tytanic 0.4.1 -- the one for that Typst --
-typstyle 0.15.1, typst-package-check 0.7.0, typst/packages' own, just 1.58.0, shellcheck 0.11.0,
-shfmt 3.14.1, actionlint 1.7.12), and `just tools-check` refuses others. The pins are the flake's
-nixpkgs' versions, and its `pins` check holds them there, so `nix develop`, CI and a manual install
-judge alike. That is why the template ships its `flake.lock`, as the python-template does.
+tinymist's lints are its version's, compiled by the Typst it is built with, package-check's lints
+are typst/packages' at its version, shellcheck's and actionlint's their versions', and
+`just shell-check` reads just's own `--dump`: their verdicts depend on their versions, so
+`tools.toml` pins them (typst 0.15.1, tytanic 0.4.1 -- the one for that Typst -- typstyle 0.15.1,
+tinymist 0.15.8 (built with Typst 0.15.1), typst-package-check 0.7.0, typst/packages' own, just
+1.58.0, shellcheck 0.11.0, shfmt 3.14.1, actionlint 1.7.12), and `just tools-check` refuses others.
+The pins are the flake's nixpkgs' versions, and its `pins` check holds them there, so `nix develop`,
+CI and a manual install judge alike. That is why the template ships its `flake.lock`, as the
+python-template does.
 
 ### The CI workflows
 
@@ -171,9 +175,9 @@ judge alike. That is why the template ships its `flake.lock`, as the python-temp
   compiles the README and the template on `compiler`'s Typst (`just floor`): the floor is tested,
   not declared.
 - `nix.yml` -- `nix fmt -- --ci`, then `nix flake check`, on x86_64 Linux, aarch64 Linux and Apple
-  silicon: the pins, the format, the shell, the workflows, the tests (so the references hold on
-  each), and typst-package-check built from its flake input (nixpkgs carries none, so an update that
-  breaks its build shows here); every system also evaluated.
+  silicon: the pins, the format, the lints, the shell, the workflows, the tests (so the references
+  hold on each), and typst-package-check built from its flake input (nixpkgs carries none, so an
+  update that breaks its build shows here); every system also evaluated.
 - `publish.yml` -- see below.
 - `style-check-dprint.yml`, `style-check-cocogitto.yml` -- formatting, and Conventional Commits:
   every commit, and a pull request's title (a squash merge makes it the commit).
@@ -254,33 +258,37 @@ The rest of `just checks`: `just shell-check` (shellcheck and shfmt over every s
 hooks and this justfile's script recipes) and `just template-shell-check` (the template's, its
 justfile's recipes included); actionlint over both sets of workflows; dprint over this repository's
 Markdown and TOML (`template/` is the generated projects'); `cog check`; and `just nix` --
-`nix fmt -- --ci` (nixfmt, shfmt and just's own, through treefmt; it formats, and fails if that
-changed a file) and the flake's checks, which run the shell and actionlint again in the sandbox.
+`nix fmt -- --ci` (nixfmt, shfmt and just's own, through treefmt) and the flake's checks, which run
+the shell and actionlint again in the sandbox.
 
-CI runs them: `nix.yml` the flake (`just nix`, step by step), `style-check-dprint.yml` and
-`style-check-cocogitto.yml` dprint and the commits, `dependabot-automerge.yml` Dependabot's action
-and render-check bumps, `release.yml` a release tag's GitHub release (`just release` cuts it: the
-changelog, the tag `v<version>`, which `cargo generate --tag` takes) -- with every tracked file as a
-tarball, as GitHub's own source archives are `git archive`'s, and so lack what
-`template/.gitattributes` export-ignores. And `.github/workflows/template-smoke-test.yml` does the
-real end-to-end check, weekly, on pushes to `main` and on every pull request: render-check; every
-kind × licence × email answer through the real cargo-generate (typst.toml, the licence files,
-dprint), and the names, and the template without a category, that must be refused; for each kind,
-with the tools its own CI installs, the hooks refusing what CI would, `just checks` but the flake's,
-`just floor`, and two releases against a bare remote, each tag then read and bundled as
-`publish.yml` does; and for each kind under Nix, generated by nixpkgs' cargo-generate, the flake's
-checks and `just checks` in its dev shell, then `just format` changing nothing.
+CI runs them:
+
+- `nix.yml`: the flake (`just nix`, step by step).
+- `style-check-dprint.yml`, `style-check-cocogitto.yml`: dprint and the commits.
+- `dependabot-automerge.yml`: Dependabot's action and render-check bumps.
+- `release.yml`: a release tag's GitHub release (`just release` cuts it: the changelog, the tag
+  `v<version>`, which `cargo generate --tag` takes), with every tracked file as a tarball: GitHub's
+  own source archives are `git archive`'s, so they lack what `template/.gitattributes`
+  export-ignores.
+- `template-smoke-test.yml`, the end-to-end check, weekly, on pushes to `main` and on every pull
+  request: render-check; every kind × licence × email answer through the real cargo-generate
+  (typst.toml, the licence files, dprint), and the names and the template without a category that
+  must be refused; for each kind, with the tools its own CI installs, the hooks refusing what CI
+  would, `just checks` but the flake's, a planted lint refused, `just floor`, and two releases
+  against a bare remote, each tag then read and bundled as `publish.yml` does; for each kind under
+  Nix, generated by nixpkgs' cargo-generate, the flake's checks and `just checks` in its dev shell,
+  then `just format` changing nothing.
 
 ## Verification status
 
 The template is driven end to end with the real tools, not reasoned about. With **cargo-generate
-0.25.0**, **typst 0.15.1**, **tytanic 0.4.1**, **typstyle 0.15.1**, **typst-package-check 0.7.0**
-(built from its tag), **just 1.58.0**, **shellcheck 0.11.0**, **shfmt 3.14.1**, **actionlint
-1.7.12**, **cocogitto 7.0.0**, **git-cliff 2.14.2** and **dprint 0.61.1** (markdown 0.26.0, TOML
-0.9.0), all 16 kind × licence × email combinations generate and, after their first commit, pass
-`just --fmt --check` and `just checks` but for `nix`: `tools-check`, `format-check`, `shell-check`,
-`actionlint`, `test`, `versions-check`, `readme-check`, `template-check`, `package-check`,
-`dprint-check` and `cog`.
+0.25.0**, **typst 0.15.1**, **tytanic 0.4.1**, **typstyle 0.15.1**, **tinymist 0.15.8**,
+**typst-package-check 0.7.0** (built from its tag), **just 1.58.0**, **shellcheck 0.11.0**, **shfmt
+3.14.1**, **actionlint 1.7.12**, **cocogitto 7.0.0**, **git-cliff 2.14.2** and **dprint 0.61.1**
+(markdown 0.26.0, TOML 0.9.0), all 16 kind × licence × email combinations generate and, after their
+first commit, pass `just --fmt --check` and `just checks` but for `nix`: `tools-check`,
+`format-check`, `lint`, `shell-check`, `actionlint`, `test`, `versions-check`, `readme-check`,
+`template-check`, `package-check`, `dprint-check` and `cog`.
 
 Also confirmed by running it:
 
@@ -289,11 +297,15 @@ Also confirmed by running it:
 - **The bundle**: exactly the package's files (typst.toml, src/, template/, README.md, the
   licences, after a release the changelog); a template's thumbnail 2067 × 2923 px, about 650 KB, of
   the template as `typst init` made it; package-check silent on it offline, and failing on a staged
-  file it warns of (`exclude/example`) and, online, on a repository that does not answer.
+  file it warns of (`exclude/example`) and, online, on a repository that does not answer. A
+  committed `scripts/dev.sh` and `docs/manual.pdf` stop `just bundle`, naming each; listed in
+  `exclude`, the manual passes, and export-ignored, the script.
 - **The checks fail when they should**: a README block with a warning (an unknown font) or with no
   language -- fenced with backticks or tildes, indented in a list or not -- an import of a stale
-  version, unformatted Typst code; and only a diagnostic counts, not a dependency's download
-  progress on Typst's stderr.
+  version, unformatted Typst code; `just lint`, in both kinds, on a set rule that takes no effect
+  in a module the entrypoint imports, a show rule that takes none in a template package's
+  template, and a compiler warning (an unknown font family), on which `tinymist lint` itself exits
+  0. Only a diagnostic counts, not a dependency's download progress on Typst's stderr.
 - **Releases** against a bare remote, through the git hooks: a package's first release tags
   `v0.1.0` (the declared version, whatever the level) and writes the changelog; a second, after a
   `fix!`, bumps to `v0.2.0` -- `typst.toml` and the README's import -- the breaking change first and
@@ -307,68 +319,61 @@ Also confirmed by running it:
   typst/packages mode (`check @preview/<name>:<version>` in a clone, the submission committed as
   publish.yml commits it), is silent too.
 - **The smoke test's own steps**, run locally as written (installs aside) for both kinds: generate,
-  the hooks, `just checks` but `nix`, `just floor` on Typst 0.14.0, the releases and each tag's
-  bundle, and the bundler's acceptance. publish.yml's push to a fork, run against a local bare
-  repository standing in for it: the branch, the commit's author and message, the link; and, the
-  fork synced and then checked out itself, the push sends the package alone (7 objects over a
-  200-commit history, with `push.negotiate` off and typst/packages moved before the sync).
+  the hooks, `just checks` but `nix`, the planted lint refused, `just floor` on Typst 0.14.0, the
+  releases and each tag's bundle, and the bundler's acceptance. publish.yml's push to a fork, run
+  against a local bare repository standing in for it: the branch, the commit's author and message,
+  the link; and, the fork synced and then checked out itself, the push sends the package alone (7
+  objects over a 200-commit history, with `push.negotiate` off and typst/packages moved before the
+  sync).
 - **`just install`**: the bundle as `@local/<name>:<version>`, which a document then imports; for
   a template package, `just install preview`, which `typst init` then starts a project from that
   compiles (its `main.typ` imports `@preview/`).
 - **The git hooks**: unformatted Typst code, a stale import, a message cog rejects and a pushed
   revert refused; a clean push accepted.
-- **The flake** of each kind evaluates on all three systems (`nix flake check --no-build
-  --all-systems`, Nix 2.34.6, the shipped flake.lock) and is nixfmt-clean; its `pins` check
-  reports nothing for the shipped pins, and names a mutated pin and an unknown one. Its tests and
-  format checks, run as the derivations run them -- the test files copied out, no network -- pass.
-- **The bundle's allowlist**: a committed `scripts/dev.sh` and `docs/manual.pdf` stop
-  `just bundle`, naming each; listed in `exclude`, the manual passes, and export-ignored, the
-  script.
-- **render-check** catches each of eleven planted defects: a misspelled variable, a glob in
+- **The flakes** -- each kind's and this repository's, whose lock is the template's, so its dev
+  shell has the versions named above -- evaluate on all three systems (`nix flake check --no-build
+  --all-systems`, Nix 2.34.6, the shipped flake.lock) and are nixfmt 1.5.0-clean. The `pins` check
+  reports nothing for the shipped pins, and names a mutated pin and an unknown one; it and
+  `just tools-check` each name a wrong tinymist or actionlint pin. Run as their derivations run
+  them -- the files copied out, no network, no `/usr/bin/env` (the Linux sandbox has none, and just
+  runs a script recipe through its shebang) -- the `tests`, `format`, `shell`, `workflows` and
+  `lint` checks pass for both kinds; `shell` fails without the shebang rewritten, and `lint` on
+  the planted set rule.
+- **`nix fmt` and `just format`**: each flake's formatter, `nix fmt -- --ci` run as treefmt 2.6.0
+  with its settings, passes on this repository and on both kinds generated, and fails on a planted
+  change, a misindented recipe line in either justfile here or in a generated project's among them.
+  `just format`, `nix fmt` so emulated, changes nothing on what generation wrote and puts back each
+  planted drift: in a template package, Typst code, a shell script, a justfile recipe line, a script
+  recipe shfmt would reformat (`just shell-check`'s verdict), Markdown, the Nix; here, a shell
+  script, a recipe line in either justfile, Markdown.
+- **render-check** catches each of eleven planted defects -- a misspelled variable, a glob in
   `ignore`, a placeholder in an excluded file, a drifted licence text, a stale and a package
   `export-ignore`, a `compiler` regex past the pins, a binary file not excluded, a wrong licence
-  file kept, an SPDX expression without its parentheses, a fourth category.
+  file kept, an SPDX expression without its parentheses, a fourth category -- and each planted
+  drift of its copies: a copied file changed, an executable bit lost, any of the three shared
+  recipes changed, the locks' nixpkgs apart, dprint's plugins apart, Liquid in an original, a copy
+  missing.
 - **The shell**: `just shell-check` passes here, in `template/` and in both kinds generated; here it
   fails on a planted unquoted variable (SC2086), a script recipe with a `{{ }}` interpolation, a
   recipe line indented off its style and an unformatted script; in a generated project, on a
   bashism in a `#!/bin/sh` recipe (checked as sh) and an unquoted variable in a
   `#!/usr/bin/env -S bash -eu` one; a recipe named `exports` is checked like any other, and a
   `#!/usr/bin/env python3` recipe and an `export x := env(...)` pass.
-- **The smoke test's downloads**: `.github/install-release-tools.sh` installs cargo-generate and
-  cocogitto from archives checked against their pinned SHA-256, and refuses one that differs.
-- **`nix fmt`**: each flake's formatter, run as treefmt 2.6.0 with the same settings and `--ci`,
-  passes on this repository and on both kinds generated, and fails on a planted change; the flakes
-  are nixfmt 1.5.0-clean. The flakes' `shell` checks, run as their derivations run them in a
-  namespace without `/usr/bin/env` -- the Linux sandbox has none, and just runs a script recipe
-  through its shebang -- pass, and fail without the shebang rewritten.
-- **This repository's flake** evaluates on all three systems; its lock is the template's, so its
-  dev shell has the versions named above (typst-package-check built from its tag), and actionlint
-  1.7.12.
-- **`just release` here**, against a bare remote, through the hooks: `v0.1.0` first, whatever the
-  level, then `v0.1.1` with its compare link; a bad level, a dirty tree, an unpushed `main`,
-  another branch and a release with nothing in it refused; a revert refused at the push, a
-  message cog rejects at the commit. release.yml's step on each tag: its notes, and a tarball of
-  every tracked file that cargo-generate generates from (`--path`); a changelog whose first
-  section is another version's, refused.
-- **render-check's copies**: each planted drift caught -- a copied file changed, an executable bit
-  lost, any of the three shared recipes changed, the locks' nixpkgs apart, dprint's plugins apart,
-  Liquid in an original, a copy missing.
-- **`just smoke package`** and **`just smoke template`** pass.
-- The workflows -- this repository's and the template's -- pass actionlint 1.7.12 with
-  shellcheck 0.11.0.
-- **`just format`**, here and in both kinds generated, with `nix fmt` emulated (its formatter's
-  settings, evaluated, run by treefmt 2.6.0): it changes nothing on what generation wrote, and, in a
-  template package, puts back each planted drift -- Typst code, a shell script, a justfile recipe
-  line, a script recipe shfmt would reformat (`just shell-check`'s verdict), Markdown, the Nix
-  (here: a shell script, a recipe line in either justfile, Markdown). The formatter takes the
-  justfiles too: `nix fmt -- --ci` fails on a misindented recipe line, here in either justfile and
-  in a generated project's.
-- **actionlint in the generated projects**: `just actionlint` and the pre-commit hook pass, and the
-  hook refuses a workflow with an unquoted variable in a `run:` script; the flake's `workflows`
-  check, run as its derivation runs it (a copy in a repository of its own, no `/usr/bin/env`),
-  passes for both kinds; the installer fetches actionlint 1.7.12's release, which runs (the archive
-  downloaded matched the release's checksums file; the installer itself checks none, as for
-  typstyle); `just tools-check` and the flake's `pins` check each name a wrong actionlint pin.
+- **The workflows** -- this repository's and the template's -- pass actionlint 1.7.12 with
+  shellcheck 0.11.0. In a generated project, `just actionlint` and the pre-commit hook pass, and the
+  hook refuses a workflow with an unquoted variable in a `run:` script.
+- **The downloads**: `.github/install-release-tools.sh`, the smoke test's, installs cargo-generate
+  and cocogitto from archives checked against their pinned SHA-256, and refuses one that differs.
+  The generated CI's installer fetches tinymist 0.15.8's and actionlint 1.7.12's releases, which
+  run; the archives downloaded matched the releases' checksums, though the installer itself checks
+  none, as for typstyle.
+- **This repository's recipes**: `just smoke package` and `just smoke template` pass. `just release`,
+  against a bare remote, through the hooks: `v0.1.0` first, whatever the level, then `v0.1.1` with
+  its compare link; a bad level, a dirty tree, an unpushed `main`, another branch and a release with
+  nothing in it refused; a revert refused at the push, a message cog rejects at the commit.
+  release.yml's step on each tag: its notes, and a tarball of every tracked file that
+  cargo-generate generates from (`--path`); a changelog whose first section is another version's,
+  refused.
 
 What this does **not** cover -- the smoke-test workflow is what does:
 

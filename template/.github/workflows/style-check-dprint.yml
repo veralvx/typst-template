@@ -10,8 +10,8 @@ on:
       # (yaml, json, Dockerfile) only schedules runs that check nothing.
       # Add a plugin there and an extension here together.
       #
-      # GitHub Actions path filters do NOT support brace expansion {a,b}.
-      # Each extension must be its own entry.
+      # GitHub Actions path filters do not support brace expansion {a,b}:
+      # each extension is its own entry.
       - "**/*.md"
       - "**/*.markdown"
       - "**/*.toml"

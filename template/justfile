@@ -43,6 +43,35 @@ format:
 format-check:
     just typstyle --check
 
+# tinymist's linter, on what Universe ships: the package from its entrypoint -- every local module
+# it reaches, never a package's; not tests/, run by tytanic, whose `catch` Typst does not know --
+# and a template package's template, its import of this package read from the work tree. Compiled
+# by tinymist's own Typst with the fonts Typst embeds alone; any warning fails, as in every compile
+# here, and a lint cannot be silenced at the site: fix the cause.
+[doc("The Typst code linted (tinymist): the package from its entrypoint, and a template package's template")]
+lint:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    work="$(mktemp -d)"
+    trap 'rm -rf "$work"' EXIT
+    lint() {
+        if ! tinymist lint --ignore-system-fonts --diagnostic-format short "$@" > "$work/out" 2>&1 \
+            || grep -q -E ': (warning|error): ' "$work/out"; then
+            cat "$work/out" >&2
+            echo "error: tinymist lint $*" >&2
+            exit 1
+        fi
+    }
+    lint --root . "$(just manifest package.entrypoint)"
+    template="$(just manifest template.path)"
+    if [ -n "$template" ]; then
+        # @preview/<name>:<version>, as the template imports it: this work tree
+        name="$(just manifest package.name)"
+        mkdir -p "$work/packages/preview/$name"
+        ln -s "$PWD" "$work/packages/preview/$name/$(just manifest package.version)"
+        lint --root "$template" --package-path "$work/packages" "$template/$(just manifest template.entrypoint)"
+    fi
+
 # typstyle over every .typ file git does not ignore -- the untracked ones too, which a commit would
 # add -- that exists: a deletion not yet staged is still git's.
 [positional-arguments]
@@ -92,6 +121,7 @@ tools-check:
     typst typst --version
     tytanic tt --version
     typstyle typstyle --version
+    tinymist tinymist -V
     typst-package-check typst-package-check version
     just just --version
     shellcheck shellcheck --version
@@ -540,7 +570,7 @@ nix:
 # then. The flake sees git's files only: a new file is invisible to it until `git add`ed. The
 # oldest Typst (`just floor`) is CI's.
 [doc("Every check, the flake's last")]
-checks: tools-check format-check shell-check actionlint test versions-check readme-check template-check package-check dprint-check cog nix
+checks: tools-check format-check lint shell-check actionlint test versions-check readme-check template-check package-check dprint-check cog nix
 
 # Opt-in, as every git hook is: a clone never installs one, so CI stays the gate.
 # `git config --unset core.hooksPath` turns them off again.

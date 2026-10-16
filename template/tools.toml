@@ -1,5 +1,6 @@
 # The tools whose verdict depends on their version, pinned: tytanic's references are its Typst's
-# rendering, typstyle's and shfmt's format are their own, package-check's lints are those
+# rendering, typstyle's and shfmt's format are their own, tinymist's lints are its version's,
+# compiled by the Typst it is built with (0.15.8's: 0.15.1), package-check's lints are those
 # typst/packages runs on a submission (its version there: .github/workflows/lint.yml),
 # shellcheck's and actionlint's are their versions', and `just shell-check` reads just's own
 # `--dump` of the justfile.
@@ -8,6 +9,7 @@
 typst = "0.15.1"
 tytanic = "0.4.1"
 typstyle = "0.15.1"
+tinymist = "0.15.8"
 typst-package-check = "0.7.0"
 just = "1.58.0"
 shellcheck = "0.11.0"

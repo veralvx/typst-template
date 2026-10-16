@@ -2,7 +2,7 @@
 # the tools its maintainers run, and the checks that need no network.
 #
 #   nix develop      the shell: cargo-generate, the generated projects' tools (typst, tytanic,
-#                    typstyle, just...), shellcheck, shfmt, actionlint, Python for render-check
+#                    typstyle, tinymist, just...), shellcheck, shfmt, actionlint, Python for render-check
 #   nix fmt          the formatter: nixfmt, shfmt (as .editorconfig says) and just's own, through
 #                    treefmt; `nix fmt -- --ci` (`just nix`) formats, and fails if that changed a
 #                    file
@@ -120,6 +120,7 @@
               pkgs.typst
               pkgs.tytanic
               pkgs.typstyle
+              pkgs.tinymist
               # nixpkgs carries none: built from its tag, as the template's flake builds it
               package-check.packages.${pkgs.stdenv.hostPlatform.system}.default
               pkgs.just

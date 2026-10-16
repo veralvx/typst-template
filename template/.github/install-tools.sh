@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# The pinned tools no action installs, into ~/.local/bin, put on PATH: typstyle and actionlint,
-# their releases' binaries; typst-package-check, the image typst/packages' CI runs (its
+# The pinned tools no action installs, into ~/.local/bin, put on PATH: typstyle, tinymist and
+# actionlint, their releases' binaries; typst-package-check, the image typst/packages' CI runs (its
 # action.yml), as a command that runs it on the working directory. checks.yml's and publish.yml's,
-# on Linux x86_64 runners; TYPSTYLE, ACTIONLINT and PACKAGE_CHECK are tools.toml's versions, each
-# tool installed only if its is set.
+# on Linux x86_64 runners; TYPSTYLE, TINYMIST, ACTIONLINT and PACKAGE_CHECK are tools.toml's
+# versions, each tool installed only if its is set.
 set -euo pipefail
 
 bin="$HOME/.local/bin"
@@ -12,6 +12,12 @@ if [ -n "${TYPSTYLE:-}" ]; then
   curl --fail --silent --show-error --location --retry 3 --output "$bin/typstyle" \
     "https://github.com/typstyle-rs/typstyle/releases/download/v$TYPSTYLE/typstyle-x86_64-unknown-linux-gnu"
   chmod +x "$bin/typstyle"
+fi
+
+if [ -n "${TINYMIST:-}" ]; then
+  curl --fail --silent --show-error --location --retry 3 \
+    "https://github.com/Myriad-Dreamin/tinymist/releases/download/v$TINYMIST/tinymist-x86_64-unknown-linux-gnu.tar.gz" |
+    tar --extract --gzip --directory "$bin" --strip-components 1 tinymist-x86_64-unknown-linux-gnu/tinymist
 fi
 
 if [ -n "${ACTIONLINT:-}" ]; then

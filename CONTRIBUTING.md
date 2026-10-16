@@ -22,9 +22,9 @@ nixpkgs a generated project's `flake.lock` pins too) -- or, installed yourself:
 - **[git-cliff](https://git-cliff.org/)**, for maintainers: `just changelog` and `just release`
   write the changelog with it.
 - For `just smoke`, a generated project's own tools, at exactly the versions `template/tools.toml`
-  pins (its `just tools-check` refuses others): Typst, tytanic, typstyle, typst-package-check, just,
-  ShellCheck, shfmt and actionlint ([template/CONTRIBUTING.md](template/CONTRIBUTING.md) says how to
-  get each).
+  pins (its `just tools-check` refuses others): Typst, tytanic, typstyle, tinymist,
+  typst-package-check, just, ShellCheck, shfmt and actionlint
+  ([template/CONTRIBUTING.md](template/CONTRIBUTING.md) says how to get each).
 - **[Nix](https://nixos.org)** for the last of `just checks`, the flake's checks (`just nix`):
   without it, `just checks` stops there, every other check passed.
 

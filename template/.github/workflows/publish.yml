@@ -1,12 +1,14 @@
-# A release tag (`just release`'s v<version>) publishes it: the bundle -- the directory
-# typst/packages gets, its template's thumbnail rendered -- made once and linted as typst/packages
-# lints a submission, online this time (its repository's URL must answer); then, from those files,
-# the GitHub release (the bundle as a tarball, the changelog's section as notes), and, once the
-# repository variable UNIVERSE_FORK names your fork of typst/packages (`you/packages`), a branch on
-# it holding the bundle, typst/packages' main beneath it -- whose pull request, titled as
-# typst/packages asks, is a link in the run's summary: the submission is yours to send, its
-# checklist yours to tick. Least privilege: the bundle job writes nothing; only the release job can
-# write this repository; only the fork's token (secrets.UNIVERSE_TOKEN) reaches the fork.
+# A release tag (`just release`'s v<version>) publishes it:
+#   bundle    the directory typst/packages gets (a template's thumbnail rendered), made once and
+#             linted as typst/packages lints a submission, online (its repository's URL must answer)
+#   release   the GitHub release, from those files: the bundle as a tarball, the changelog's section
+#             as notes
+#   universe  once the repository variable UNIVERSE_FORK names your fork of typst/packages
+#             (`you/packages`): a branch on it holding the bundle, typst/packages' main beneath it,
+#             and its pull request, titled as typst/packages asks, linked in the run's summary --
+#             the submission is yours to send, its checklist yours to tick
+# Least privilege: the bundle job writes nothing; only the release job can write this repository;
+# only the fork's token (secrets.UNIVERSE_TOKEN) reaches the fork.
 name: Publish
 
 on:
